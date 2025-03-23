@@ -90,5 +90,11 @@ if st.button('Predict Obesity Level'):
         st.success(f'Predicted Obesity Level: {prediction_label[0]}')
         st.info(f'Prediction Probability: {np.max(proba) * 100:.2f}%')
 
+        st.subheader('Prediction Probabilities for All Classes')
+        class_prob_df = pd.DataFrame(probabilities, columns=model.classes_).T.reset_index()
+        class_prob_df.columns = ['Obesity Level', 'Probability']
+        class_prob_df['Probability (%)'] = class_prob_df['Probability'] * 100
+        st.dataframe(class_prob_df[['Obesity Level', 'Probability (%)']].sort_values(by='Probability (%)', ascending=False), use_container_width=True)
+
     except Exception as e:
         st.error(f'Prediction failed: {e}')
