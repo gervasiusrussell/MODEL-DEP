@@ -17,9 +17,6 @@ model = pickle.load(open('model.pkl', 'rb'))
 st.title('Machine Learning App')
 st.info('This app will predict your obesity level!')
 
-# Optional: Show logo or header image
-st.image('image.png', use_column_width=True)
-
 # ======================= 1. Display Raw Data ========================
 with st.expander('Data'):
     st.write('This is a raw data')
