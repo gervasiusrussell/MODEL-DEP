@@ -6,7 +6,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 # Load your raw dataset for display and visualization
-raw_data = pd.read_csv('your_dataset.csv')  # Replace with your dataset file
+raw_data = pd.read_csv('ObesityDataSet_raw_and_data_sinthetic.csv')  # Replace with your dataset file
 
 # Load the pickle files
 encoder = pickle.load(open('encoder.pkl', 'rb'))
