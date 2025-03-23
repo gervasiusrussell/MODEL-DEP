@@ -5,10 +5,10 @@ import pickle
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-# Load your raw dataset for display and visualization
-raw_data = pd.read_csv('ObesityDataSet_raw_and_data_sinthetic.csv')  # Replace with your dataset file
+# Load raw dataset for display and visualization
+raw_data = pd.read_csv('ObesityDataSet_raw_and_data_sinthetic.csv')
 
-# Load the pickle files
+# Load pkl files
 encoder = pickle.load(open('encoder.pkl', 'rb'))
 scaler = pickle.load(open('scaler.pkl', 'rb'))
 model = pickle.load(open('model.pkl', 'rb'))
@@ -16,6 +16,9 @@ model = pickle.load(open('model.pkl', 'rb'))
 # App Title
 st.title('Machine Learning App')
 st.info('This app will predict your obesity level!')
+
+# Optional: Show logo or header image
+st.image('image.png', use_column_width=True)
 
 # ======================= 1. Display Raw Data ========================
 with st.expander('Data'):
@@ -36,7 +39,8 @@ with st.expander('Data Visualization'):
     plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
     st.pyplot(fig)
 
-# User Inputs
+# ========================== 3. User Inputs ===========================
+st.header('Input Data')
 gender = st.selectbox('Gender', ['Male', 'Female'])
 age = st.slider('Age', 10, 100, 25)
 height = st.number_input('Height (in meters)', min_value=1.0, max_value=2.5, value=1.7)
@@ -54,7 +58,7 @@ tue = st.slider('Time Using Technology (0-3)', 0, 3, 1)
 calc = st.selectbox('Alcohol Consumption', ['no', 'Sometimes', 'Frequently', 'Always'])
 mtrans = st.selectbox('Transportation Mode', ['Automobile', 'Bike', 'Motorbike', 'Public Transportation', 'Walking'])
 
-# Create DataFrame
+# Create DataFrame from user input
 input_data = pd.DataFrame({
     'Gender': [gender],
     'Age': [age],
@@ -74,16 +78,29 @@ input_data = pd.DataFrame({
     'MTRANS': [mtrans]
 })
 
-# Encoding
-input_encoded = encoder.transform(input_data)
+# ========================= 4. Encoding ===============================
+categorical_cols = ['Gender', 'family_history_with_overweight', 'FAVC', 'CAEC', 
+                    'SMOKE', 'SCC', 'CALC', 'MTRANS']
+input_categorical = input_data[categorical_cols]
+encoded_categorical = encoder.transform(input_categorical)
+encoded_categorical_df = pd.DataFrame(encoded_categorical, columns=encoder.get_feature_names_out(categorical_cols))
 
-# Normalization/Scaling
-input_scaled = scaler.transform(input_encoded)
+# ========================= 5. Scaling (only Age, Weight, NCP) ====================
+scale_cols = ['Age', 'Weight', 'NCP']
+input_numerical = input_data[scale_cols]
+scaled_numerical = scaler.transform(input_numerical)
+scaled_numerical_df = pd.DataFrame(scaled_numerical, columns=scale_cols)
 
-# Prediction
+# Get the other features (without scaling)
+other_cols = input_data.drop(columns=categorical_cols + scale_cols).reset_index(drop=True)
+
+# ========================= 6. Concatenate all processed features =================
+final_input = pd.concat([scaled_numerical_df, other_cols, encoded_categorical_df], axis=1)
+
+# ========================= 7. Prediction Button ============================
 if st.button('Predict'):
-    prediction = model.predict(input_scaled)
-    probability = model.predict_proba(input_scaled)
+    prediction = model.predict(final_input)
+    probability = model.predict_proba(final_input)
 
     st.success(f'Prediction: {prediction[0]}')
     st.info(f'Prediction Probability: {np.max(probability) * 100:.2f}%')
