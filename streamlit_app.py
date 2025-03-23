@@ -80,19 +80,18 @@ st.dataframe(input_data, use_container_width=True)
 # =================== Encoding & Scaling ===================
 if st.button('Predict Obesity Level'):
     try:
-        # 🟢 Manually encode categorical columns using the loaded encoder (which is a dict)
+        # Transform categorical features using LabelEncoder
         for col in encoder.keys():
-            input_data[col] = input_data[col].map(encoder[col])
+            input_data[col] = encoder[col].transform(input_data[[col]])
 
-        # 🟢 Scale ONLY the numeric columns: Age, Weight, NCP
+        # Scale only age, weight, ncp
         scale_cols = ['Age', 'Weight', 'NCP']
         input_data[scale_cols] = scaler.transform(input_data[scale_cols])
 
-        # 🟢 Make prediction
+        # Predict
         prediction = model.predict(input_data)
         probability = model.predict_proba(input_data)
 
-        # 🟢 Show the result
         st.success(f'Predicted Obesity Level: {prediction[0]}')
         st.info(f'Prediction Probability: {np.max(probability) * 100:.2f}%')
 
